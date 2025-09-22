@@ -52,23 +52,22 @@ function solveSAG() {
 }
 
 describe("IQOS Page Link/CTA Integrity", () => {
-  let brokenLinks = [];
-
-  beforeEach(() => {
+  it("should check all links and CTAs for 4xx errors", () => {
     cy.visit(baseUrl);
     handleCookieBanner();
     solveSAG();
-  });
 
-  it("should check all links and CTAs for 4xx errors", () => {
+    const brokenLinks = [];
+
     cy.get("a[href], button[href], [data-href], [data-url]").each(($el) => {
       let href = $el.prop("href") || $el.attr("data-href") || $el.attr("data-url");
 
-      if (href && href.startsWith("https:") 
-               && !href.includes('mailto:') 
-               && !href.match(/\.(pdf|jpg|jpeg|png|gif|svg|mp4|webp)(\?.*)?$/i)
-               
-              ) {
+      if (
+        href &&
+        href.startsWith("https:") &&
+        !href.includes('mailto:') &&
+        !href.match(/\.(pdf|jpg|jpeg|png|gif|svg|mp4|webp)(\?.*)?$/i)
+      ) {
         cy.request({
           url: href,
           failOnStatusCode: false,
@@ -83,35 +82,22 @@ describe("IQOS Page Link/CTA Integrity", () => {
         });
       }
     });
+
+    // Use cy.then() to ensure this block runs after all requests are complete
+    cy.then(() => {
+      if (brokenLinks.length > 0) {
+        cy.log('--- BROKEN LINKS REPORT (4xx Errors) ---');
+        brokenLinks.forEach((item, index) => {
+          cy.log(`[${index + 1}] Error ${item.status} Found: ${item.link}`);
+          cy.log(`Element: ${item.element}`);
+        });
+        cy.log('-------------------------------------------');
+        // This is a crucial step for CI/CD: an assertion to fail the test if broken links exist.
+        expect(brokenLinks).to.have.length(0);
+      } else {
+        const success = '✅ All links and CTAs checked successfully. No 4xx errors found.';
+        cy.log(success);
+      }
+    });
   });
-
-  after(() => {
-  if (brokenLinks.length > 0) {
-    const lines = [];
-    lines.push('--- BROKEN LINKS REPORT (4xx Errors) ---');
-
-    brokenLinks.forEach((item, index) => {
-      lines.push(`[${index + 1}] Error ${item.status} Found: ${item.link}`);
-      lines.push(`Element: ${item.element}`);
-    });
-
-    lines.push('-------------------------------------------');
-
-    // Log to Cypress + console
-    lines.forEach(line => {
-      cy.log(line);
-      console.log(line);
-    });
-
-    // Save to file
-    cy.writeFile('broken-links-report.txt', lines.join('\n'));
-  } else {
-    const success = '✅ All links and CTAs checked successfully. No 4xx errors found.';
-    cy.log(success);
-    console.log(success);
-
-    cy.writeFile('broken-links-report.txt', success);
-  }
-});
-
 });
