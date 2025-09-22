@@ -33,7 +33,7 @@ jobs:
     
     - name: Upload broken links report
       if: always()   # upload even if tests fail
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: broken-links-report
         path: broken-links-report.txt
