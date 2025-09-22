@@ -87,28 +87,31 @@ describe("IQOS Page Link/CTA Integrity", () => {
 
   after(() => {
   if (brokenLinks.length > 0) {
-    const header = '--- BROKEN LINKS REPORT (4xx Errors) ---';
-    cy.log(header);
-    console.log(header);
+    const lines = [];
+    lines.push('--- BROKEN LINKS REPORT (4xx Errors) ---');
 
     brokenLinks.forEach((item, index) => {
-      const errorLine = `[${index + 1}] Error ${item.status} Found: ${item.link}`;
-      const elementLine = `Element: ${item.element}`;
-
-      cy.log(errorLine);
-      console.log(errorLine);
-
-      cy.log(elementLine);
-      console.log(elementLine);
+      lines.push(`[${index + 1}] Error ${item.status} Found: ${item.link}`);
+      lines.push(`Element: ${item.element}`);
     });
 
-    const footer = '-------------------------------------------';
-    cy.log(footer);
-    console.log(footer);
+    lines.push('-------------------------------------------');
+
+    // Log to Cypress + console
+    lines.forEach(line => {
+      cy.log(line);
+      console.log(line);
+    });
+
+    // Save to file
+    cy.writeFile('broken-links-report.txt', lines.join('\n'));
   } else {
     const success = '✅ All links and CTAs checked successfully. No 4xx errors found.';
     cy.log(success);
     console.log(success);
+
+    cy.writeFile('broken-links-report.txt', success);
   }
 });
+
 });
