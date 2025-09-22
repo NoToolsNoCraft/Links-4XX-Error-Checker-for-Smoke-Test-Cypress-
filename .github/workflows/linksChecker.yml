@@ -29,11 +29,10 @@ jobs:
       run: npm install cypress --save-dev  # Install Cypress as a dev dependency
 
     - name: Run Cypress tests
-      run: npx cypress run --spec 'cypress/e2e/'
+      run: npx cypress run --spec 'cypress/e2e/' | tee cypress-output.log
     
-    - name: Upload broken links report
-      if: always()   # upload even if tests fail
-      uses: actions/upload-artifact@v4
-      with:
-        name: broken-links-report
-        path: broken-links-report.txt
+    - name: Add broken links report to summary
+      if: always()
+      run: |
+        echo "### Broken Links Report" >> $GITHUB_STEP_SUMMARY
+        grep -E "BROKEN LINKS REPORT|Error|✅" cypress-output.log >> $GITHUB_STEP_SUMMARY || true
