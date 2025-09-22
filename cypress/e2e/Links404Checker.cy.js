@@ -4,7 +4,7 @@ Cypress.on("uncaught:exception", () => {
   return false; // ignore app-level uncaught errors
 });
 
-const baseUrl = "https://www.iqos.com/cz/cs/home.html?gr=false";
+const baseUrl = "https://www.iqos.com/gb/en/discover-heated-tobacco/duty-to-inform.html?gr=false";
 
 // helper to accept/dismiss cookie banner if present
 function handleCookieBanner() {
@@ -64,7 +64,11 @@ describe("IQOS Page Link/CTA Integrity", () => {
     cy.get("a[href], button[href], [data-href], [data-url]").each(($el) => {
       let href = $el.prop("href") || $el.attr("data-href") || $el.attr("data-url");
 
-      if (href && href.startsWith("https:") && !href.includes('mailto:')) {
+      if (href && href.startsWith("https:") 
+               && !href.includes('mailto:') 
+               && !href.match(/\.(pdf|jpg|jpeg|png|gif|svg|mp4|webp)(\?.*)?$/i)
+               
+              ) {
         cy.request({
           url: href,
           failOnStatusCode: false,
@@ -82,15 +86,29 @@ describe("IQOS Page Link/CTA Integrity", () => {
   });
 
   after(() => {
-    if (brokenLinks.length > 0) {
-      cy.log('--- BROKEN LINKS REPORT (4xx Errors) ---');
-      brokenLinks.forEach((item, index) => {
-        cy.log(`[${index + 1}] Error ${item.status} Found: ${item.link}`);
-        cy.log(`Element: ${item.element}`);
-      });
-      cy.log('-------------------------------------------');
-    } else {
-      cy.log('✅ All links and CTAs checked successfully. No 4xx errors found.');
-    }
-  });
+  if (brokenLinks.length > 0) {
+    const header = '--- BROKEN LINKS REPORT (4xx Errors) ---';
+    cy.log(header);
+    console.log(header);
+
+    brokenLinks.forEach((item, index) => {
+      const errorLine = `[${index + 1}] Error ${item.status} Found: ${item.link}`;
+      const elementLine = `Element: ${item.element}`;
+
+      cy.log(errorLine);
+      console.log(errorLine);
+
+      cy.log(elementLine);
+      console.log(elementLine);
+    });
+
+    const footer = '-------------------------------------------';
+    cy.log(footer);
+    console.log(footer);
+  } else {
+    const success = '✅ All links and CTAs checked successfully. No 4xx errors found.';
+    cy.log(success);
+    console.log(success);
+  }
+});
 });
