@@ -8,11 +8,13 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 
 
 
+
 describe('Link and Button Checker', () => {
   const url = 'https://www.iqos.com/gb/en/discover-heated-tobacco/duty-to-inform.html?gr=false';
   const brokenLinks = [];
   const filesToSkipPaths = ['/content/dam/'];
 
+  // A helper function to validate a single URL.
   const validateUrl = (href, elementText, elementType) => {
     const fullUrl = href.startsWith('http') ? href : `${Cypress.config('baseUrl')}${href}`;
 
@@ -21,9 +23,8 @@ describe('Link and Button Checker', () => {
     }
 
     if (filesToSkipPaths.some(path => fullUrl.toLowerCase().includes(path))) {
-      // You can remove this cy.log() as well, since it's only visible in the Cypress runner.
-      // Or you can keep it for local interactive runs.
-      cy.log(`Skipping file link based on path: ${fullUrl}`); 
+      // Use cy.task() to log that we are skipping this link
+      cy.task('log', `Skipping file link based on path: ${fullUrl}`);
       return;
     }
 
@@ -55,7 +56,7 @@ describe('Link and Button Checker', () => {
     });
 
     cy.get('button').each(($el) => {
-      const href = $el.attr('onclick') || $el.attr('data-href'); 
+      const href = $el.attr('onclick') || $el.attr('data-href');
       const text = $el.text().trim() || $el.attr('aria-label') || 'Button';
       if (href) {
         const cleanedHref = href.match(/'(.*?)\.pdf'/)?.[1] + '.pdf' || href;
@@ -65,19 +66,19 @@ describe('Link and Button Checker', () => {
 
     cy.then(() => {
       if (brokenLinks.length > 0) {
-        // Use console.log to print to the terminal. This will show up in GitHub Actions.
-        console.log('⚠️ --- BROKEN LINKS FOUND --- ⚠️');
+        // Use cy.task() to send the log message
+        cy.task('log', '⚠️ --- BROKEN LINKS FOUND --- ⚠️');
         brokenLinks.forEach((link) => {
-          console.log(`
+          cy.task('log', `
             - Status: ${link.status}
             - URL: ${link.url}
             - Element Type: ${link.element}
             - Element Text: "${link.text}"
           `);
         });
-        console.log('❌ Test completed with broken links. See above log for details.');
+        cy.task('log', '❌ Test completed with broken links. See above log for details.');
       } else {
-        console.log('✅ --- All links and buttons are working correctly! --- ✅');
+        cy.task('log', '✅ --- All links and buttons are working correctly! --- ✅');
       }
     });
   });
