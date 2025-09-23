@@ -1,4 +1,4 @@
-# Cypress Link and Button Checker
+# Cypress Link and Button Checker 
 
 This repository contains an automated **Cypress test** and **GitHub Actions workflow** that validates all links and buttons on a given page.  
 The test ensures that no broken links (status code `>= 400`) exist on the target website.  
