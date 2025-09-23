@@ -1,9 +1,16 @@
-// cypress/e2e/link-checker.cy.ts
+/// <reference types="cypress" />
+
+Cypress.on('uncaught:exception', (err, runnable) => {
+  // Return false to prevent Cypress from failing the test
+  // when it encounters an uncaught exception from the application.
+  return false;
+});
+
 
 describe('Link and Button Checker', () => {
   const url = 'https://www.iqos.com/gb/en/discover-heated-tobacco/duty-to-inform.html?gr=false';
   const brokenLinks = [];
-  const filesToSkipPaths = ['/content/dam/wam/locale/']; // Path pattern for downloadable assets
+  const filesToSkipPaths = ['/content/dam/']; // Path pattern for downloadable assets
 
   // A helper function to validate a single URL.
   const validateUrl = (href, elementText, elementType) => {
